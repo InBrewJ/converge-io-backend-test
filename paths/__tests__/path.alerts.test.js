@@ -56,16 +56,16 @@ describe('/alert path PUT sanity checks', () => {
       method: 'email',
       destination: 'jason.brewer101@gmail.com'
     }
-    await request(app).put('/alerts').send(packet)
-    await request(app)
+    const alertRes = await request(app).put('/alerts').send(packet)
+    const dataRes = await request(app)
       .put('/data')
       .send(generatePacketWithTime(_sensorId, 10, 55))
 
-    expect(2).toBe(2)
+    expect(dataRes.statusCode).toBe(204)
   })
 })
 
-describe.skip('/alert path GET sanity checks', () => {
+describe('/alert path GET sanity checks', () => {
   test('It should respond with a 204 if an alert packet is valid and has been saved successfully', async () => {
     const _sensorId = uuidv4()
     const packet = {
