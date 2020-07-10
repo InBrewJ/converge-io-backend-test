@@ -14,6 +14,14 @@ const alertReturned = {
   alertLow: 0
 }
 
+const alertReturnedUnsupportedMethod = {
+  sensorId: '7817f7d5-b127-4e39-8322-92ee73de5901',
+  method: 'zeppelin',
+  destination: 'jason.brewer101@gmail.com',
+  alertHigh: 100,
+  alertLow: 0
+}
+
 describe('alertProvider sanity', async () => {
   test('it should return the callback assigned to it', async () => {
     const _sensorId = 'be-ace'
@@ -49,6 +57,16 @@ describe('handleAlert: email', async () => {
     expect(res).toEqual({
       method: 'email',
       alertSent: true,
+      sentTo: 'jason.brewer101@gmail.com'
+    })
+  })
+
+  test('Do not send an email with an unsupported method', async () => {
+    const value = -100
+    const res = await handleAlert(value, alertReturnedUnsupportedMethod)
+    expect(res).toEqual({
+      method: 'zeppelin',
+      alertSent: false,
       sentTo: 'jason.brewer101@gmail.com'
     })
   })

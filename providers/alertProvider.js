@@ -1,13 +1,24 @@
 const SensorAlerts = require('../server/models').t_sensor_alerts
 
 const handleAlert = async (value, dataValues) => {
-  const { alertHigh, alertLow, method } = dataValues
+  const { sensorId, alertHigh, alertLow, method, destination: to } = dataValues
   if (value > alertHigh || value < alertLow) {
-    const { destination } = require(`./destinations/${method}Out`)
-    return {
-      method,
-      alertSent: true,
-      sentTo: 'jason.brewer101@gmail.com'
+    try {
+      const { destination = undefined } =
+        require(`./destinations/${method}Out`) || {}
+      const destRes = await destination.send({
+        to,
+        subject: `There is a problem with your sensor: ${sensorId}`,
+        message: `Sensor ${sensorId} has reached value ${value}. `
+      })
+
+      return {
+        method,
+        alertSent: destRes.success,
+        sentTo: 'jason.brewer101@gmail.com'
+      }
+    } catch (e) {
+      console.error(`Could not alert user ${to} :: `, e)
     }
   }
   return {
@@ -24,7 +35,6 @@ const withAlert = async (sensorId, time, value, cb) => {
         sensorId
       }
     })
-    console.log('ar :: ', alertsRes)
     // There should only ever be one result
     // because of the constraints in Postgres
     // If something went wrong, take the first alert
@@ -32,6 +42,7 @@ const withAlert = async (sensorId, time, value, cb) => {
     if (t_sensor_alerts) {
       // send alert
       const { dataValues } = t_sensor_alerts || {}
+      // Do not await this - we don't want the email sending to be blocking
       handleAlert(value, dataValues)
     }
 

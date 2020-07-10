@@ -48,7 +48,7 @@ describe('/alert path PUT sanity checks', () => {
     expect(response.statusCode).toBe(409)
   })
 
-  test('Set alert then send packet over threshold sends alert', async () => {
+  test('Can set alert THEN send packet', async () => {
     const _sensorId = uuidv4()
     const packet = {
       sensorId: _sensorId,
@@ -56,12 +56,29 @@ describe('/alert path PUT sanity checks', () => {
       method: 'email',
       destination: 'jason.brewer101@gmail.com'
     }
-    const alertRes = await request(app).put('/alerts').send(packet)
+    await request(app).put('/alerts').send(packet)
     const dataRes = await request(app)
       .put('/data')
       .send(generatePacketWithTime(_sensorId, 10, 55))
 
     expect(dataRes.statusCode).toBe(204)
+  })
+
+  test('Can send packet THEN set alert', async () => {
+    const _sensorId = uuidv4()
+    const packet = {
+      sensorId: _sensorId,
+      alertHigh: 50,
+      method: 'email',
+      destination: 'jason.brewer101@gmail.com'
+    }
+
+    await request(app)
+      .put('/data')
+      .send(generatePacketWithTime(_sensorId, 10, 55))
+    const alertRes = await request(app).put('/alerts').send(packet)
+
+    expect(alertRes.statusCode).toBe(204)
   })
 })
 
