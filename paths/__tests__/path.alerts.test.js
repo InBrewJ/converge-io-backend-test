@@ -10,7 +10,7 @@ afterAll(() => {
 })
 
 // No relational linking (for now) because we may want to set alerts
-// BEFORE the sensor is live
+// BEFORE the sensor has sent its first event
 
 describe('/alert path PUT sanity checks', () => {
   test('It should respond with a 204 if an alert packet is valid and has been saved successfully', async () => {

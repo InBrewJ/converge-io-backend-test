@@ -5,6 +5,7 @@
   "scripts": {
     "start": "bin/run_pg.sh && node server.js",
     "watch": "bin/run_pg.sh && nodemon server.js",
+    "watch:test": "bin/run_pg.sh && NODE_ENV=test nodemon server.js",
     "seed": "bin/run_pg.sh && bin/seed_db.sh",
     "test": "jest",
     "sequelize": "sequelize",
