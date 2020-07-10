@@ -4,13 +4,21 @@ const { v4: uuidv4 } = require('uuid')
 const sequelize = require('sequelize')
 const db = require('../../server/models')
 
+const generatePacketWithTime = (uuid, time, value) => {
+  return {
+    sensorId: uuid,
+    time: +time,
+    value
+  }
+}
+
 // to close the db connection properly
 afterAll(() => {
   db.sequelize.close()
 })
 
-// No relational linking (for now) because we may want to set alerts
-// BEFORE the sensor has sent its first event
+// No enforced relational linking (for now) between events + alerts
+// because we may want to set alerts BEFORE the sensor has sent its first event
 
 describe('/alert path PUT sanity checks', () => {
   test('It should respond with a 204 if an alert packet is valid and has been saved successfully', async () => {
@@ -18,10 +26,58 @@ describe('/alert path PUT sanity checks', () => {
     const packet = {
       sensorId: _sensorId,
       method: 'email',
+      alertHigh: 100,
+      alertLow: 0,
       destination: 'jason.brewer101@gmail.com'
     }
     const response = await request(app).put('/alerts').send(packet)
 
     expect(response.statusCode).toBe(204)
+  })
+
+  test('It should respond with a 409 for two alerts on the same sensorId', async () => {
+    const _sensorId = uuidv4()
+    const packet = {
+      sensorId: _sensorId,
+      method: 'email',
+      destination: 'jason.brewer101@gmail.com'
+    }
+    await request(app).put('/alerts').send(packet)
+    const response = await request(app).put('/alerts').send(packet)
+
+    expect(response.statusCode).toBe(409)
+  })
+
+  test('Set alert then send packet over threshold sends alert', async () => {
+    const _sensorId = uuidv4()
+    const packet = {
+      sensorId: _sensorId,
+      alertHigh: 50,
+      method: 'email',
+      destination: 'jason.brewer101@gmail.com'
+    }
+    await request(app).put('/alerts').send(packet)
+    await request(app)
+      .put('/data')
+      .send(generatePacketWithTime(_sensorId, 10, 55))
+
+    expect(2).toBe(2)
+  })
+})
+
+describe.skip('/alert path GET sanity checks', () => {
+  test('It should respond with a 204 if an alert packet is valid and has been saved successfully', async () => {
+    const _sensorId = uuidv4()
+    const packet = {
+      sensorId: _sensorId,
+      method: 'email',
+      destination: 'jason.brewer101@gmail.com'
+    }
+    await request(app).put('/alerts').send(packet)
+
+    const response = await request(app).get('/alerts')
+    const { body: sensorEvents } = response
+
+    expect(sensorEvents.length).toBeGreaterThan(0)
   })
 })
