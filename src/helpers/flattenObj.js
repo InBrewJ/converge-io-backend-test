@@ -10,7 +10,6 @@ const flattenObj = (obj, keyQueue = [], accObj = {}) => {
     const isArray = Array.isArray(currentValue)
 
     if (isNotObject || isArray) {
-      // then we have a value like a array etc
       const newKey = [...keyQueue, key].join('.')
       accObj[newKey] = currentValue
     } else {
