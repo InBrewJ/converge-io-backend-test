@@ -106,4 +106,17 @@ describe('Flatten Object', () => {
 
     expect(flattenObj(nested)).toEqual(expected)
   })
+
+  test('it should handle null + undefined', () => {
+    expect(flattenObj(null)).toEqual({})
+    expect(flattenObj(undefined)).toEqual({})
+  })
+
+  test('it should handle the empty object', () => {
+    expect(flattenObj({})).toEqual({})
+  })
+
+  test('it should handle the empty argument', () => {
+    expect(flattenObj()).toEqual({})
+  })
 })
